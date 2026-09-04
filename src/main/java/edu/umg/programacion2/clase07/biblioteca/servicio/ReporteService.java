@@ -34,7 +34,7 @@ public class ReporteService {
      *
      * Salida esperada con los datos de sql/schema.sql:
      *   [Cien anios de soledad, El principito, Introduction to Algorithms]
-     *   (el orden puede variar, un Set no garantiza orden)
+     *   (el orden puede variar, un Set no me garantiza orden)
      *
      * Pistas:
      * 1. Consigue todos los libros con libroDAO.listarTodos().
@@ -55,7 +55,19 @@ public class ReporteService {
      */
     public Set<Libro> librosNuncaPrestados() throws SQLException {
         Set<Libro> resultado = new HashSet<>();
-        // TODO: usar libroDAO y prestamoDAO para llenar "resultado" segun las pistas de arriba.
+        List<Libro> todosLibros = libroDAO.listarTodos();
+        List<PrestamoDetalle> prestamosActivos = prestamoDAO.listarPrestamosActivosConLibro();
+
+        Set<String> titulosConPrestamo = new HashSet<>();
+        for (PrestamoDetalle prestamo : prestamosActivos) {
+            titulosConPrestamo.add(prestamo.getTituloLibro());
+        }
+
+        for (Libro libro : todosLibros) {
+            if (!titulosConPrestamo.contains(libro.getTitulo())) {
+                resultado.add(libro);
+            }
+        }
 
         return resultado;
     }
@@ -74,7 +86,11 @@ public class ReporteService {
     public Map<String, Integer> contarPrestamosActivosPorTitulo() throws SQLException {
         Map<String, Integer> conteo = new HashMap<>();
         List<PrestamoDetalle> activos = prestamoDAO.listarPrestamosActivosConLibro();
-        // TODO: recorrer "activos" y llenar "conteo" usando getTituloLibro() como llave.
+
+        for (PrestamoDetalle prestamo : activos) {
+            String titulo = prestamo.getTituloLibro();
+            conteo.put(titulo, conteo.getOrDefault(titulo, 0) + 1);
+        }
 
         return conteo;
     }
